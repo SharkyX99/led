@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ป้ายไฟ LED</title>
+<style>
+  :root{
+    --bg-deep:#07070d;
+    --panel:#101018;
+    --panel-line:#23232f;
+    --neon-pink:#ff2fb8;
+    --neon-cyan:#2ff2ff;
+    --neon-amber:#ffb020;
+    --neon-lime:#a6ff2f;
+    --text-dim:#8d8da3;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:var(--bg-deep);
+    font-family:'Segoe UI', 'Noto Sans Thai', sans-serif;
+    touch-action:none;
+    overscroll-behavior:none;
+  }
+  body.locked{
+    touch-action:none;
+  }
+
+  #stage{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(ellipse at center, #10101a 0%, #05050a 75%);
+    overflow:hidden;
+  }
+
+  /* dot-matrix board texture */
+  #stage::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 6px 6px;
+    pointer-events:none;
+  }
+
+  #glowLayer{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    mix-blend-mode:screen;
+    opacity:0;
+    transition:opacity .3s ease;
+  }
+  #glowLayer.active{opacity:1;}
+  .beam{
+    position:absolute;
+    width:60vmax;
+    height:60vmax;
+    border-radius:50%;
+    filter:blur(80px);
+    opacity:.35;
+  }
+  .beam1{background:var(--neon-pink); top:-20%; left:-10%;}
+  .beam2{background:var(--neon-cyan); bottom:-25%; right:-10%;}
+  .beam3{background:var(--neon-amber); top:30%; right:20%;}
+
+  #signText{
+    position:relative;
+    z-index:2;
+    white-space:nowrap;
+    font-weight:800;
+    letter-spacing:0.02em;
+    font-family:'Arial Black','Noto Sans Thai',sans-serif;
+    color:#ff2fb8;
+    text-shadow:
+      0 0 6px currentColor,
+      0 0 18px currentColor,
+      0 0 40px currentColor,
+      0 0 80px currentColor;
+    animation:marquee 12s linear infinite;
+    padding-left:100%;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  #signText.static{
+    animation:none;
+    padding-left:0;
+  }
+  @keyframes marquee{
+    0%{transform:translateX(0);}
+    100%{transform:translateX(-100%);}
+  }
+  #marqueeTrack{
+    width:100%;
+    overflow:hidden;
+    position:relative;
+    z-index:2;
+  }
+
+  /* ===== Control Dock ===== */
+  #dock{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    z-index:10;
+    display:flex;
+    justify-content:center;
+    padding:14px 10px calc(14px + env(safe-area-inset-bottom));
+    transition:transform .35s ease, opacity .35s ease;
+  }
+  #dock.hidden{
+    transform:translateY(120%);
+    opacity:0;
+    pointer-events:none;
+  }
+  #panel{
+    width:100%;
+    max-width:760px;
+    background:linear-gradient(180deg, var(--panel), #0b0b12);
+    border:1px solid var(--panel-line);
+    border-radius:18px;
+    padding:14px 16px 12px;
+    box-shadow:0 10px 40px rgba(0,0,0,.6);
+    color:#e8e8f0;
+  }
+  #textRow{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  #textInput{
+    flex:1;
+    min-width:0;
+    background:#05050a;
+    border:1px solid var(--panel-line);
+    color:#fff;
+    padding:10px 12px;
+    border-radius:10px;
+    font-size:15px;
+    outline:none;
+  }
+  #textInput:focus{border-color:var(--neon-cyan);}
+
+  .ctrlGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .ctrl label{
+    display:block;
+    font-size:11px;
+    color:var(--text-dim);
+    margin-bottom:4px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  select, input[type=range], input[type=color]{
+    width:100%;
+    background:#05050a;
+    border:1px solid var(--panel-line);
+    color:#fff;
+    border-radius:8px;
+    padding:6px 8px;
+    font-size:13px;
+  }
+  input[type=color]{
+    padding:2px;
+    height:32px;
+    cursor:pointer;
+  }
+  input[type=range]{
+    padding:0;
+    accent-color:var(--neon-cyan);
+  }
+
+  #actionRow{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .btn{
+    flex:1;
+    min-width:90px;
+    border:1px solid var(--panel-line);
+    background:#15151f;
+    color:#fff;
+    padding:11px 10px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    transition:transform .15s ease, background .2s ease, box-shadow .2s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn.on{
+    background:var(--neon-cyan);
+    color:#05050a;
+    box-shadow:0 0 16px var(--neon-cyan);
+  }
+  .btn.discoOn{
+    background:linear-gradient(90deg,var(--neon-pink),var(--neon-amber),var(--neon-cyan),var(--neon-lime));
+    background-size:300% 100%;
+    animation:discoBtn 2s linear infinite;
+    color:#05050a;
+  }
+  @keyframes discoBtn{
+    0%{background-position:0% 50%;}
+    100%{background-position:300% 50%;}
+  }
+
+  /* Lock overlay + unlock fab */
+  #unlockFab{
+    position:fixed;
+    z-index:20;
+    right:16px;
+    bottom:16px;
+    width:52px;
+    height:52px;
+    border-radius:50%;
+    background:#15151f;
+    border:1px solid var(--panel-line);
+    color:#fff;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    box-shadow:0 6px 20px rgba(0,0,0,.5);
+    cursor:pointer;
+  }
+  #unlockFab.show{display:flex;}
+  #unlockFab:active{transform:scale(.92);}
+
+  ::selection{background:transparent;}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="glowLayer">
+    <div class="beam beam1"></div>
+    <div class="beam beam2"></div>
+    <div class="beam beam3"></div>
+  </div>
+  <div id="marqueeTrack">
+    <div id="signText">ยินดีต้อนรับ WELCOME</div>
+  </div>
+</div>
+
+<button id="unlockFab" title="ปลดล็อก">🔒</button>
+
+<div id="dock">
+  <div id="panel">
+    <div id="textRow">
+      <input id="textInput" type="text" maxlength="200" value="ยินดีต้อนรับ WELCOME" placeholder="พิมพ์ข้อความป้ายไฟ...">
+    </div>
+
+    <div class="ctrlGrid">
+      <div class="ctrl">
+        <label>ฟอนต์</label>
+        <select id="fontSelect">
+          <option value="'Arial Black','Noto Sans Thai',sans-serif">Arial Black</option>
+          <option value="'Courier New', monospace">Courier (LED)</option>
+          <option value="'Georgia', serif">Georgia</option>
+          <option value="'Comic Sans MS', cursive">Comic Sans</option>
+          <option value="'Impact', sans-serif">Impact</option>
+          <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
+          <option value="'Noto Sans Thai', sans-serif">Noto Sans Thai</option>
+        </select>
+      </div>
+      <div class="ctrl">
+        <label>สีตัวอักษร</label>
+        <input id="colorPicker" type="color" value="#ff2fb8">
+      </div>
+      <div class="ctrl">
+        <label>ขนาดตัวอักษร: <span id="sizeVal">64</span>px</label>
+        <input id="sizeSlider" type="range" min="20" max="200" value="64">
+      </div>
+      <div class="ctrl">
+        <label>ความเร็วเลื่อน: <span id="speedVal">12</span>s</label>
+        <input id="speedSlider" type="range" min="2" max="30" value="12">
+      </div>
+    </div>
+
+    <div id="actionRow">
+      <button class="btn" id="scrollToggleBtn">⏸ หยุดเลื่อน</button>
+      <button class="btn" id="discoBtn">🪩 ไฟดิสโก้</button>
+      <button class="btn" id="fullscreenBtn">⛶ เต็มจอ</button>
+      <button class="btn" id="lockBtn">🔒 ล็อกหน้าจอ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const textInput = document.getElementById('textInput');
+  const signText = document.getElementById('signText');
+  const fontSelect = document.getElementById('fontSelect');
+  const colorPicker = document.getElementById('colorPicker');
+  const sizeSlider = document.getElementById('sizeSlider');
+  const sizeVal = document.getElementById('sizeVal');
+  const speedSlider = document.getElementById('speedSlider');
+  const speedVal = document.getElementById('speedVal');
+  const scrollToggleBtn = document.getElementById('scrollToggleBtn');
+  const discoBtn = document.getElementById('discoBtn');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const lockBtn = document.getElementById('lockBtn');
+  const dock = document.getElementById('dock');
+  const unlockFab = document.getElementById('unlockFab');
+  const glowLayer = document.getElementById('glowLayer');
+
+  let scrolling = true;
+  let discoOn = false;
+  let discoTimer = null;
+  let locked = false;
+
+  const neonPalette = ['#ff2fb8','#2ff2ff','#ffb020','#a6ff2f','#ff4d4d','#c04dff','#4dffb0'];
+
+  function updateText(){
+    signText.textContent = textInput.value.trim() || 'ป้ายไฟ LED';
+  }
+  textInput.addEventListener('input', updateText);
+
+  fontSelect.addEventListener('change', ()=>{
+    signText.style.fontFamily = fontSelect.value;
+  });
+
+  colorPicker.addEventListener('input', ()=>{
+    if(!discoOn) signText.style.color = colorPicker.value;
+  });
+
+  sizeSlider.addEventListener('input', ()=>{
+    sizeVal.textContent = sizeSlider.value;
+    signText.style.fontSize = sizeSlider.value + 'px';
+  });
+
+  speedSlider.addEventListener('input', ()=>{
+    speedVal.textContent = speedSlider.value;
+    signText.style.animationDuration = speedSlider.value + 's';
+  });
+
+  scrollToggleBtn.addEventListener('click', ()=>{
+    scrolling = !scrolling;
+    signText.classList.toggle('static', !scrolling);
+    scrollToggleBtn.textContent = scrolling ? '⏸ หยุดเลื่อน' : '▶ เลื่อนข้อความ';
+    scrollToggleBtn.classList.toggle('on', !scrolling);
+  });
+
+  function startDisco(){
+    glowLayer.classList.add('active');
+    discoBtn.classList.add('discoOn');
+    let i = 0;
+    discoTimer = setInterval(()=>{
+      i = (i+1) % neonPalette.length;
+      signText.style.color = neonPalette[i];
+      const beams = glowLayer.querySelectorAll('.beam');
+      beams.forEach((b, idx)=>{
+        b.style.background = neonPalette[(i+idx+1) % neonPalette.length];
+      });
+    }, 400);
+  }
+  function stopDisco(){
+    clearInterval(discoTimer);
+    glowLayer.classList.remove('active');
+    discoBtn.classList.remove('discoOn');
+    signText.style.color = colorPicker.value;
+  }
+  discoBtn.addEventListener('click', ()=>{
+    discoOn = !discoOn;
+    if(discoOn) startDisco(); else stopDisco();
+  });
+
+  fullscreenBtn.addEventListener('click', ()=>{
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen().catch(()=>{});
+    } else {
+      document.exitFullscreen().catch(()=>{});
+    }
+  });
+  document.addEventListener('fullscreenchange', ()=>{
+    fullscreenBtn.classList.toggle('on', !!document.fullscreenElement);
+  });
+
+  function lockScreen(){
+    locked = true;
+    dock.classList.add('hidden');
+    unlockFab.classList.add('show');
+    document.body.classList.add('locked');
+  }
+  function unlockScreen(){
+    locked = false;
+    dock.classList.remove('hidden');
+    unlockFab.classList.remove('show');
+    document.body.classList.remove('locked');
+  }
+  lockBtn.addEventListener('click', lockScreen);
+  unlockFab.addEventListener('click', unlockScreen);
+
+  // Prevent scroll/zoom gestures on the stage while allowing normal control interaction
+  document.getElementById('stage').addEventListener('touchmove', (e)=>{
+    e.preventDefault();
+  }, {passive:false});
+
+  document.addEventListener('gesturestart', (e)=> e.preventDefault());
+
+  // init
+  updateText();
+})();
+</script>
+</body>
+</html>
