@@ -131,12 +131,14 @@
  
   #marqueeTrack{
     width:100%;
-    overflow:hidden;
+    overflow-x:hidden;
+    overflow-y:visible;
     position:relative;
     z-index:2;
     display:flex;
     align-items:center;
-    height:1.4em;
+    height:auto;
+    min-height:1.4em;
   }
   #signText{
     position:relative;
