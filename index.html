@@ -30,7 +30,7 @@
   body.locked{
     touch-action:none;
   }
- 
+
   #stage{
     position:fixed;
     inset:0;
@@ -40,7 +40,7 @@
     background:radial-gradient(ellipse at center, #10101a 0%, #05050a 75%);
     overflow:hidden;
   }
- 
+
   /* dot-matrix board texture */
   #stage::before{
     content:"";
@@ -51,7 +51,7 @@
     pointer-events:none;
     z-index:1;
   }
- 
+
   #glowLayer{
     position:absolute;
     inset:0;
@@ -74,7 +74,7 @@
   .beam1{background:var(--neon-pink); top:-20%; left:-10%;}
   .beam2{background:var(--neon-cyan); bottom:-25%; right:-10%;}
   .beam3{background:var(--neon-amber); top:30%; right:20%;}
- 
+
   /* ===== Border chase bulbs ===== */
   #bulbLayer{
     position:absolute;
@@ -107,7 +107,7 @@
     0%,49%{opacity:1;}
     50%,100%{opacity:.15; box-shadow:0 0 2px #ffb020;}
   }
- 
+
   /* ===== Sparkle burst ===== */
   #sparkleLayer{
     position:absolute;
@@ -128,7 +128,7 @@
     15%{opacity:1; transform:scale(1) translateY(-6px) rotate(20deg);}
     100%{opacity:0; transform:scale(.6) translateY(-70px) rotate(140deg);}
   }
- 
+
   #marqueeTrack{
     width:100%;
     overflow-x:hidden;
@@ -149,7 +149,7 @@
   .signCopy{
     font-weight:800;
     letter-spacing:0.02em;
-    font-family:'Arial Black','Noto Sans Thai',sans-serif;
+    font-family:'Arial Black','Noto Sans Thai','Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
     color:#ff2fb8;
     text-shadow:
       0 0 6px currentColor,
@@ -160,22 +160,8 @@
     user-select:none;
     -webkit-user-select:none;
   }
-  .signCopy.rainbow{
-    background:linear-gradient(90deg,var(--neon-pink),var(--neon-amber),var(--neon-cyan),var(--neon-lime),var(--neon-pink));
-    background-size:300% 100%;
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    -webkit-text-fill-color:transparent;
-    text-shadow:none;
-    filter:drop-shadow(0 0 14px rgba(255,255,255,.35));
-    animation:rainbowShift 3s linear infinite;
-  }
-  @keyframes rainbowShift{
-    0%{background-position:0% 50%;}
-    100%{background-position:300% 50%;}
-  }
- 
+
+
   /* ===== Control Dock ===== */
   #dock{
     position:fixed;
@@ -220,7 +206,7 @@
     outline:none;
   }
   #textInput:focus{border-color:var(--neon-cyan);}
- 
+
   .ctrlGrid{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
@@ -253,7 +239,7 @@
     padding:0;
     accent-color:var(--neon-cyan);
   }
- 
+
   #presetRow{
     margin-bottom:10px;
   }
@@ -283,7 +269,7 @@
     transition:transform .15s ease;
   }
   .themeBtn:active{transform:scale(.94);}
- 
+
   #actionRow{
     display:flex;
     flex-wrap:wrap;
@@ -323,7 +309,7 @@
     0%{background-position:0% 50%;}
     100%{background-position:300% 50%;}
   }
- 
+
   /* Lock overlay + unlock fab */
   #unlockFab{
     position:fixed;
@@ -345,12 +331,12 @@
   }
   #unlockFab.show{display:flex;}
   #unlockFab:active{transform:scale(.92);}
- 
+
   ::selection{background:transparent;}
 </style>
 </head>
 <body>
- 
+
 <div id="stage">
   <div id="glowLayer">
     <div class="beam beam1"></div>
@@ -368,26 +354,26 @@
     </div>
   </div>
 </div>
- 
+
 <button id="unlockFab" title="ปลดล็อก">🔒</button>
- 
+
 <div id="dock">
   <div id="panel">
     <div id="textRow">
-      <input id="textInput" type="text" maxlength="200" value="ยินดีต้อนรับ WELCOME" placeholder="พิมพ์ข้อความป้ายไฟ...">
+      <input id="textInput" type="text" maxlength="300" value="ยินดีต้อนรับ WELCOME" placeholder="พิมพ์ข้อความป้ายไฟ... (ใส่ emoji ได้ 🎉)">
     </div>
- 
+
     <div class="ctrlGrid">
       <div class="ctrl">
         <label>ฟอนต์</label>
         <select id="fontSelect">
-          <option value="'Arial Black','Noto Sans Thai',sans-serif">Arial Black</option>
-          <option value="'Courier New', monospace">Courier (LED)</option>
-          <option value="'Georgia', serif">Georgia</option>
-          <option value="'Comic Sans MS', cursive">Comic Sans</option>
-          <option value="'Impact', sans-serif">Impact</option>
-          <option value="'Trebuchet MS', sans-serif">Trebuchet</option>
-          <option value="'Noto Sans Thai', sans-serif">Noto Sans Thai</option>
+          <option value="'Arial Black','Noto Sans Thai','Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">Arial Black</option>
+          <option value="'Courier New', monospace, 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'">Courier (LED)</option>
+          <option value="'Georgia', serif, 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'">Georgia</option>
+          <option value="'Comic Sans MS', cursive, 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'">Comic Sans</option>
+          <option value="'Impact', sans-serif, 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'">Impact</option>
+          <option value="'Trebuchet MS', sans-serif, 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'">Trebuchet</option>
+          <option value="'Noto Sans Thai', sans-serif, 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji'">Noto Sans Thai</option>
         </select>
       </div>
       <div class="ctrl">
@@ -403,12 +389,12 @@
         <input id="speedSlider" type="range" min="2" max="30" value="12">
       </div>
     </div>
- 
+
     <div id="presetRow">
       <label>ธีมสำเร็จรูป</label>
       <div id="presetBtns"></div>
     </div>
- 
+
     <div id="actionRow">
       <button class="btn" id="scrollToggleBtn">⏸ หยุดเลื่อน</button>
       <button class="btn" id="discoBtn">🪩 ไฟดิสโก้</button>
@@ -420,7 +406,7 @@
     </div>
   </div>
 </div>
- 
+
 <script>
 (function(){
   const textInput = document.getElementById('textInput');
@@ -449,10 +435,10 @@
   const sparkleLayer = document.getElementById('sparkleLayer');
   const stage = document.getElementById('stage');
   const presetBtns = document.getElementById('presetBtns');
- 
+
   const neonPalette = ['#ff2fb8','#2ff2ff','#ffb020','#a6ff2f','#ff4d4d','#c04dff','#4dffb0'];
   const sparkleGlyphs = ['✦','✧','★','✨','●'];
- 
+
   const themes = [
     {name:'นีออนซิตี้', color:'#ff2fb8', beams:['#ff2fb8','#2ff2ff','#ffb020']},
     {name:'เมทริกซ์เขียว', color:'#39ff14', beams:['#39ff14','#0aff9d','#0d5c2f']},
@@ -460,25 +446,25 @@
     {name:'วินเทจไดเนอร์', color:'#ffcc00', beams:['#ff6f00','#ffcc00','#ff3d3d']},
     {name:'อวกาศ', color:'#8a2be2', beams:['#8a2be2','#2ff2ff','#ff2fb8']}
   ];
- 
+
   const beamEls = [
     document.querySelector('.beam1'),
     document.querySelector('.beam2'),
     document.querySelector('.beam3')
   ];
- 
+
   let scrolling = true;
   let discoOn = false;
   let rainbowOn = false;
   let bulbsOn = false;
   let discoTimer = null;
   let locked = false;
- 
+
   let copyWidth = 0;
   let position = 0;
   let lastTime = null;
   let rafId = null;
- 
+
   /* ---------- persistence ---------- */
   const STORAGE_KEY = 'ledSignState_v1';
   function saveState(){
@@ -504,7 +490,7 @@
       return JSON.parse(raw);
     }catch(e){ return null; }
   }
- 
+
   /* ---------- text & measuring ---------- */
   function updateText(){
     const val = textInput.value.trim() || 'ป้ายไฟ LED';
@@ -520,13 +506,13 @@
     }
   }
   textInput.addEventListener('input', ()=>{ updateText(); saveState(); });
- 
+
   fontSelect.addEventListener('change', ()=>{
     signText.style.fontFamily = fontSelect.value;
     requestAnimationFrame(measure);
     saveState();
   });
- 
+
   colorPicker.addEventListener('input', ()=>{
     if(!discoOn && !rainbowOn){
       copyA.style.color = colorPicker.value;
@@ -534,28 +520,28 @@
     }
     saveState();
   });
- 
+
   sizeSlider.addEventListener('input', ()=>{
     sizeVal.textContent = sizeSlider.value;
     signText.style.fontSize = sizeSlider.value + 'px';
     requestAnimationFrame(measure);
     saveState();
   });
- 
+
   speedSlider.addEventListener('input', ()=>{
     speedVal.textContent = speedSlider.value;
     // speed only changes how fast pxPerSec is computed each frame -
     // position is untouched, so the motion continues smoothly with no jump/reset
     saveState();
   });
- 
+
   /* ---------- smooth seamless scroll loop ---------- */
   function frame(ts){
     if(lastTime === null) lastTime = ts;
     let dt = (ts - lastTime) / 1000;
     if(dt > 0.05) dt = 0.05; // guard against tab-switch jumps
     lastTime = ts;
- 
+
     if(scrolling && copyWidth > 0){
       const speedSeconds = parseFloat(speedSlider.value) || 12;
       const pxPerSec = copyWidth / speedSeconds;
@@ -567,7 +553,7 @@
     }
     rafId = requestAnimationFrame(frame);
   }
- 
+
   scrollToggleBtn.addEventListener('click', ()=>{
     scrolling = !scrolling;
     lastTime = null; // avoid a big dt jump right after resuming
@@ -575,7 +561,7 @@
     scrollToggleBtn.classList.toggle('on', !scrolling);
     saveState();
   });
- 
+
   /* ---------- disco ---------- */
   function startDisco(){
     glowLayer.classList.add('active');
@@ -605,14 +591,27 @@
     discoOn = !discoOn;
     if(discoOn) startDisco(); else stopDisco();
   });
- 
-  /* ---------- rainbow gradient text ---------- */
+
+  /* ---------- rainbow color-cycle text (emoji-safe: only `color` changes, never fill-opacity) ---------- */
+  let rainbowHue = 0;
+  let rainbowTimer = null;
   function applyRainbow(){
-    copyA.classList.toggle('rainbow', rainbowOn);
-    copyB.classList.toggle('rainbow', rainbowOn);
-    if(!rainbowOn){
-      copyA.style.color = colorPicker.value;
-      copyB.style.color = colorPicker.value;
+    if(rainbowOn){
+      rainbowTimer = setInterval(()=>{
+        rainbowHue = (rainbowHue + 6) % 360;
+        if(!discoOn){
+          const c = 'hsl(' + rainbowHue + ',100%,60%)';
+          copyA.style.color = c;
+          copyB.style.color = c;
+        }
+      }, 40);
+    } else {
+      clearInterval(rainbowTimer);
+      rainbowTimer = null;
+      if(!discoOn){
+        copyA.style.color = colorPicker.value;
+        copyB.style.color = colorPicker.value;
+      }
     }
   }
   rainbowBtn.addEventListener('click', ()=>{
@@ -621,7 +620,7 @@
     applyRainbow();
     saveState();
   });
- 
+
   /* ---------- border chase bulbs ---------- */
   function buildBulbs(){
     const count = 26;
@@ -643,7 +642,7 @@
     bulbBtn.classList.toggle('on', bulbsOn);
     saveState();
   });
- 
+
   /* ---------- sparkle burst (loop) ---------- */
   let sparkleOn = false;
   let sparkleTimer = null;
@@ -676,7 +675,7 @@
     if(sparkleOn) startSparkleLoop(); else stopSparkleLoop();
     saveState();
   });
- 
+
   /* ---------- presets ---------- */
   function applyTheme(theme){
     colorPicker.value = theme.color;
@@ -694,7 +693,7 @@
     btn.addEventListener('click', ()=> applyTheme(theme));
     presetBtns.appendChild(btn);
   });
- 
+
   /* ---------- fullscreen ---------- */
   fullscreenBtn.addEventListener('click', ()=>{
     if(!document.fullscreenElement){
@@ -707,7 +706,7 @@
     fullscreenBtn.classList.toggle('on', !!document.fullscreenElement);
     requestAnimationFrame(measure);
   });
- 
+
   /* ---------- lock / unlock ---------- */
   function lockScreen(){
     locked = true;
@@ -723,16 +722,16 @@
   }
   lockBtn.addEventListener('click', lockScreen);
   unlockFab.addEventListener('click', unlockScreen);
- 
+
   // Prevent scroll/zoom gestures on the stage while allowing normal control interaction
   stage.addEventListener('touchmove', (e)=>{
     e.preventDefault();
   }, {passive:false});
- 
+
   document.addEventListener('gesturestart', (e)=> e.preventDefault());
- 
+
   window.addEventListener('resize', ()=> requestAnimationFrame(measure));
- 
+
   /* ---------- init ---------- */
   function init(){
     const saved = loadState();
@@ -767,11 +766,11 @@
     copyA.style.color = rainbowOn ? copyA.style.color : colorPicker.value;
     copyB.style.color = rainbowOn ? copyB.style.color : colorPicker.value;
     applyRainbow();
- 
+
     // start swept-in from the right edge, like a marquee entrance
     position = stage.getBoundingClientRect().width;
     signText.style.transform = 'translateX(' + position + 'px)';
- 
+
     rafId = requestAnimationFrame(frame);
   }
   init();
