@@ -30,7 +30,7 @@
   body.locked{
     touch-action:none;
   }
-
+ 
   #stage{
     position:fixed;
     inset:0;
@@ -40,7 +40,7 @@
     background:radial-gradient(ellipse at center, #10101a 0%, #05050a 75%);
     overflow:hidden;
   }
-
+ 
   /* dot-matrix board texture */
   #stage::before{
     content:"";
@@ -49,8 +49,9 @@
     background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
     background-size: 6px 6px;
     pointer-events:none;
+    z-index:1;
   }
-
+ 
   #glowLayer{
     position:absolute;
     inset:0;
@@ -58,6 +59,7 @@
     mix-blend-mode:screen;
     opacity:0;
     transition:opacity .3s ease;
+    z-index:1;
   }
   #glowLayer.active{opacity:1;}
   .beam{
@@ -67,15 +69,82 @@
     border-radius:50%;
     filter:blur(80px);
     opacity:.35;
+    transition:background .4s ease;
   }
   .beam1{background:var(--neon-pink); top:-20%; left:-10%;}
   .beam2{background:var(--neon-cyan); bottom:-25%; right:-10%;}
   .beam3{background:var(--neon-amber); top:30%; right:20%;}
-
-  #signText{
+ 
+  /* ===== Border chase bulbs ===== */
+  #bulbLayer{
+    position:absolute;
+    inset:10px;
+    pointer-events:none;
+    z-index:5;
+    opacity:0;
+    transition:opacity .3s ease;
+  }
+  #bulbLayer.active{opacity:1;}
+  .bulbRow{
+    position:absolute;
+    left:0; right:0;
+    display:flex;
+    justify-content:space-between;
+    padding:0 6px;
+  }
+  .bulbRow.top{top:0;}
+  .bulbRow.bottom{bottom:0;}
+  .bulb{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:radial-gradient(circle, #fff6d0, #ffb020);
+    box-shadow:0 0 6px #ffb020, 0 0 12px #ffb020;
+    animation:bulbBlink 1s infinite steps(1);
+  }
+  .bulb.odd{animation-delay:.5s;}
+  @keyframes bulbBlink{
+    0%,49%{opacity:1;}
+    50%,100%{opacity:.15; box-shadow:0 0 2px #ffb020;}
+  }
+ 
+  /* ===== Sparkle burst ===== */
+  #sparkleLayer{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:6;
+    overflow:hidden;
+  }
+  .sparkle{
+    position:absolute;
+    font-size:18px;
+    opacity:0;
+    animation:sparklePop 900ms ease-out forwards;
+    filter:drop-shadow(0 0 6px currentColor);
+  }
+  @keyframes sparklePop{
+    0%{opacity:0; transform:scale(.2) translateY(0) rotate(0deg);}
+    15%{opacity:1; transform:scale(1) translateY(-6px) rotate(20deg);}
+    100%{opacity:0; transform:scale(.6) translateY(-70px) rotate(140deg);}
+  }
+ 
+  #marqueeTrack{
+    width:100%;
+    overflow:hidden;
     position:relative;
     z-index:2;
+    display:flex;
+    align-items:center;
+    height:1.4em;
+  }
+  #signText{
+    position:relative;
+    display:flex;
     white-space:nowrap;
+    will-change:transform;
+  }
+  .signCopy{
     font-weight:800;
     letter-spacing:0.02em;
     font-family:'Arial Black','Noto Sans Thai',sans-serif;
@@ -85,26 +154,26 @@
       0 0 18px currentColor,
       0 0 40px currentColor,
       0 0 80px currentColor;
-    animation:marquee 12s linear infinite;
-    padding-left:100%;
+    padding-right:80px;
     user-select:none;
     -webkit-user-select:none;
   }
-  #signText.static{
-    animation:none;
-    padding-left:0;
+  .signCopy.rainbow{
+    background:linear-gradient(90deg,var(--neon-pink),var(--neon-amber),var(--neon-cyan),var(--neon-lime),var(--neon-pink));
+    background-size:300% 100%;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    -webkit-text-fill-color:transparent;
+    text-shadow:none;
+    filter:drop-shadow(0 0 14px rgba(255,255,255,.35));
+    animation:rainbowShift 3s linear infinite;
   }
-  @keyframes marquee{
-    0%{transform:translateX(0);}
-    100%{transform:translateX(-100%);}
+  @keyframes rainbowShift{
+    0%{background-position:0% 50%;}
+    100%{background-position:300% 50%;}
   }
-  #marqueeTrack{
-    width:100%;
-    overflow:hidden;
-    position:relative;
-    z-index:2;
-  }
-
+ 
   /* ===== Control Dock ===== */
   #dock{
     position:fixed;
@@ -123,6 +192,8 @@
   #panel{
     width:100%;
     max-width:760px;
+    max-height:70vh;
+    overflow-y:auto;
     background:linear-gradient(180deg, var(--panel), #0b0b12);
     border:1px solid var(--panel-line);
     border-radius:18px;
@@ -147,7 +218,7 @@
     outline:none;
   }
   #textInput:focus{border-color:var(--neon-cyan);}
-
+ 
   .ctrlGrid{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(140px,1fr));
@@ -180,7 +251,37 @@
     padding:0;
     accent-color:var(--neon-cyan);
   }
-
+ 
+  #presetRow{
+    margin-bottom:10px;
+  }
+  #presetRow label{
+    display:block;
+    font-size:11px;
+    color:var(--text-dim);
+    margin-bottom:6px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  #presetBtns{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .themeBtn{
+    border:1px solid var(--panel-line);
+    background:#15151f;
+    color:#fff;
+    padding:8px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .15s ease;
+  }
+  .themeBtn:active{transform:scale(.94);}
+ 
   #actionRow{
     display:flex;
     flex-wrap:wrap;
@@ -220,7 +321,7 @@
     0%{background-position:0% 50%;}
     100%{background-position:300% 50%;}
   }
-
+ 
   /* Lock overlay + unlock fab */
   #unlockFab{
     position:fixed;
@@ -242,31 +343,38 @@
   }
   #unlockFab.show{display:flex;}
   #unlockFab:active{transform:scale(.92);}
-
+ 
   ::selection{background:transparent;}
 </style>
 </head>
 <body>
-
+ 
 <div id="stage">
   <div id="glowLayer">
     <div class="beam beam1"></div>
     <div class="beam beam2"></div>
     <div class="beam beam3"></div>
   </div>
+  <div id="bulbLayer">
+    <div class="bulbRow top" id="bulbTop"></div>
+    <div class="bulbRow bottom" id="bulbBottom"></div>
+  </div>
+  <div id="sparkleLayer"></div>
   <div id="marqueeTrack">
-    <div id="signText">ยินดีต้อนรับ WELCOME</div>
+    <div id="signText">
+      <span class="signCopy" id="copyA">ยินดีต้อนรับ WELCOME</span><span class="signCopy" id="copyB">ยินดีต้อนรับ WELCOME</span>
+    </div>
   </div>
 </div>
-
+ 
 <button id="unlockFab" title="ปลดล็อก">🔒</button>
-
+ 
 <div id="dock">
   <div id="panel">
     <div id="textRow">
       <input id="textInput" type="text" maxlength="200" value="ยินดีต้อนรับ WELCOME" placeholder="พิมพ์ข้อความป้ายไฟ...">
     </div>
-
+ 
     <div class="ctrlGrid">
       <div class="ctrl">
         <label>ฟอนต์</label>
@@ -293,20 +401,30 @@
         <input id="speedSlider" type="range" min="2" max="30" value="12">
       </div>
     </div>
-
+ 
+    <div id="presetRow">
+      <label>ธีมสำเร็จรูป</label>
+      <div id="presetBtns"></div>
+    </div>
+ 
     <div id="actionRow">
       <button class="btn" id="scrollToggleBtn">⏸ หยุดเลื่อน</button>
       <button class="btn" id="discoBtn">🪩 ไฟดิสโก้</button>
+      <button class="btn" id="rainbowBtn">🌈 สายรุ้ง</button>
+      <button class="btn" id="bulbBtn">💡 ไฟกระพริบขอบ</button>
+      <button class="btn" id="sparkleBtn">🎆 พ่นประกาย</button>
       <button class="btn" id="fullscreenBtn">⛶ เต็มจอ</button>
       <button class="btn" id="lockBtn">🔒 ล็อกหน้าจอ</button>
     </div>
   </div>
 </div>
-
+ 
 <script>
 (function(){
   const textInput = document.getElementById('textInput');
   const signText = document.getElementById('signText');
+  const copyA = document.getElementById('copyA');
+  const copyB = document.getElementById('copyB');
   const fontSelect = document.getElementById('fontSelect');
   const colorPicker = document.getElementById('colorPicker');
   const sizeSlider = document.getElementById('sizeSlider');
@@ -315,58 +433,158 @@
   const speedVal = document.getElementById('speedVal');
   const scrollToggleBtn = document.getElementById('scrollToggleBtn');
   const discoBtn = document.getElementById('discoBtn');
+  const rainbowBtn = document.getElementById('rainbowBtn');
+  const bulbBtn = document.getElementById('bulbBtn');
+  const sparkleBtn = document.getElementById('sparkleBtn');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
   const lockBtn = document.getElementById('lockBtn');
   const dock = document.getElementById('dock');
   const unlockFab = document.getElementById('unlockFab');
   const glowLayer = document.getElementById('glowLayer');
-
+  const bulbLayer = document.getElementById('bulbLayer');
+  const bulbTop = document.getElementById('bulbTop');
+  const bulbBottom = document.getElementById('bulbBottom');
+  const sparkleLayer = document.getElementById('sparkleLayer');
+  const stage = document.getElementById('stage');
+  const presetBtns = document.getElementById('presetBtns');
+ 
+  const neonPalette = ['#ff2fb8','#2ff2ff','#ffb020','#a6ff2f','#ff4d4d','#c04dff','#4dffb0'];
+  const sparkleGlyphs = ['✦','✧','★','✨','●'];
+ 
+  const themes = [
+    {name:'นีออนซิตี้', color:'#ff2fb8', beams:['#ff2fb8','#2ff2ff','#ffb020']},
+    {name:'เมทริกซ์เขียว', color:'#39ff14', beams:['#39ff14','#0aff9d','#0d5c2f']},
+    {name:'คริสต์มาส', color:'#ff3b3b', beams:['#ff3b3b','#2ecc71','#ffd700']},
+    {name:'วินเทจไดเนอร์', color:'#ffcc00', beams:['#ff6f00','#ffcc00','#ff3d3d']},
+    {name:'อวกาศ', color:'#8a2be2', beams:['#8a2be2','#2ff2ff','#ff2fb8']}
+  ];
+ 
+  const beamEls = [
+    document.querySelector('.beam1'),
+    document.querySelector('.beam2'),
+    document.querySelector('.beam3')
+  ];
+ 
   let scrolling = true;
   let discoOn = false;
+  let rainbowOn = false;
+  let bulbsOn = false;
   let discoTimer = null;
   let locked = false;
-
-  const neonPalette = ['#ff2fb8','#2ff2ff','#ffb020','#a6ff2f','#ff4d4d','#c04dff','#4dffb0'];
-
-  function updateText(){
-    signText.textContent = textInput.value.trim() || 'ป้ายไฟ LED';
+ 
+  let copyWidth = 0;
+  let position = 0;
+  let lastTime = null;
+  let rafId = null;
+ 
+  /* ---------- persistence ---------- */
+  const STORAGE_KEY = 'ledSignState_v1';
+  function saveState(){
+    try{
+      const state = {
+        text: textInput.value,
+        font: fontSelect.value,
+        color: colorPicker.value,
+        size: sizeSlider.value,
+        speed: speedSlider.value,
+        scrolling: scrolling,
+        bulbsOn: bulbsOn,
+        rainbowOn: rainbowOn
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }catch(e){}
   }
-  textInput.addEventListener('input', updateText);
-
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return null;
+      return JSON.parse(raw);
+    }catch(e){ return null; }
+  }
+ 
+  /* ---------- text & measuring ---------- */
+  function updateText(){
+    const val = textInput.value.trim() || 'ป้ายไฟ LED';
+    copyA.textContent = val;
+    copyB.textContent = val;
+    measure();
+  }
+  function measure(){
+    const w = copyA.getBoundingClientRect().width;
+    if(w > 0){
+      copyWidth = w;
+      if(position <= -copyWidth) position = position % copyWidth;
+    }
+  }
+  textInput.addEventListener('input', ()=>{ updateText(); saveState(); });
+ 
   fontSelect.addEventListener('change', ()=>{
     signText.style.fontFamily = fontSelect.value;
+    requestAnimationFrame(measure);
+    saveState();
   });
-
+ 
   colorPicker.addEventListener('input', ()=>{
-    if(!discoOn) signText.style.color = colorPicker.value;
+    if(!discoOn && !rainbowOn){
+      copyA.style.color = colorPicker.value;
+      copyB.style.color = colorPicker.value;
+    }
+    saveState();
   });
-
+ 
   sizeSlider.addEventListener('input', ()=>{
     sizeVal.textContent = sizeSlider.value;
     signText.style.fontSize = sizeSlider.value + 'px';
+    requestAnimationFrame(measure);
+    saveState();
   });
-
+ 
   speedSlider.addEventListener('input', ()=>{
     speedVal.textContent = speedSlider.value;
-    signText.style.animationDuration = speedSlider.value + 's';
+    // speed only changes how fast pxPerSec is computed each frame -
+    // position is untouched, so the motion continues smoothly with no jump/reset
+    saveState();
   });
-
+ 
+  /* ---------- smooth seamless scroll loop ---------- */
+  function frame(ts){
+    if(lastTime === null) lastTime = ts;
+    let dt = (ts - lastTime) / 1000;
+    if(dt > 0.05) dt = 0.05; // guard against tab-switch jumps
+    lastTime = ts;
+ 
+    if(scrolling && copyWidth > 0){
+      const speedSeconds = parseFloat(speedSlider.value) || 12;
+      const pxPerSec = copyWidth / speedSeconds;
+      position -= pxPerSec * dt;
+      if(position <= -copyWidth){
+        position += copyWidth; // seamless wrap: second copy is identical, so no visible reset
+      }
+      signText.style.transform = 'translateX(' + position + 'px)';
+    }
+    rafId = requestAnimationFrame(frame);
+  }
+ 
   scrollToggleBtn.addEventListener('click', ()=>{
     scrolling = !scrolling;
-    signText.classList.toggle('static', !scrolling);
+    lastTime = null; // avoid a big dt jump right after resuming
     scrollToggleBtn.textContent = scrolling ? '⏸ หยุดเลื่อน' : '▶ เลื่อนข้อความ';
     scrollToggleBtn.classList.toggle('on', !scrolling);
+    saveState();
   });
-
+ 
+  /* ---------- disco ---------- */
   function startDisco(){
     glowLayer.classList.add('active');
     discoBtn.classList.add('discoOn');
     let i = 0;
     discoTimer = setInterval(()=>{
       i = (i+1) % neonPalette.length;
-      signText.style.color = neonPalette[i];
-      const beams = glowLayer.querySelectorAll('.beam');
-      beams.forEach((b, idx)=>{
+      if(!rainbowOn){
+        copyA.style.color = neonPalette[i];
+        copyB.style.color = neonPalette[i];
+      }
+      beamEls.forEach((b, idx)=>{
         b.style.background = neonPalette[(i+idx+1) % neonPalette.length];
       });
     }, 400);
@@ -375,13 +593,90 @@
     clearInterval(discoTimer);
     glowLayer.classList.remove('active');
     discoBtn.classList.remove('discoOn');
-    signText.style.color = colorPicker.value;
+    if(!rainbowOn){
+      copyA.style.color = colorPicker.value;
+      copyB.style.color = colorPicker.value;
+    }
   }
   discoBtn.addEventListener('click', ()=>{
     discoOn = !discoOn;
     if(discoOn) startDisco(); else stopDisco();
   });
-
+ 
+  /* ---------- rainbow gradient text ---------- */
+  function applyRainbow(){
+    copyA.classList.toggle('rainbow', rainbowOn);
+    copyB.classList.toggle('rainbow', rainbowOn);
+    if(!rainbowOn){
+      copyA.style.color = colorPicker.value;
+      copyB.style.color = colorPicker.value;
+    }
+  }
+  rainbowBtn.addEventListener('click', ()=>{
+    rainbowOn = !rainbowOn;
+    rainbowBtn.classList.toggle('on', rainbowOn);
+    applyRainbow();
+    saveState();
+  });
+ 
+  /* ---------- border chase bulbs ---------- */
+  function buildBulbs(){
+    const count = 26;
+    bulbTop.innerHTML = '';
+    bulbBottom.innerHTML = '';
+    for(let i=0;i<count;i++){
+      const b1 = document.createElement('div');
+      b1.className = 'bulb' + (i % 2 ? ' odd' : '');
+      bulbTop.appendChild(b1);
+      const b2 = document.createElement('div');
+      b2.className = 'bulb' + (i % 2 ? '' : ' odd');
+      bulbBottom.appendChild(b2);
+    }
+  }
+  buildBulbs();
+  bulbBtn.addEventListener('click', ()=>{
+    bulbsOn = !bulbsOn;
+    bulbLayer.classList.toggle('active', bulbsOn);
+    bulbBtn.classList.toggle('on', bulbsOn);
+    saveState();
+  });
+ 
+  /* ---------- sparkle burst ---------- */
+  function spawnSparkles(count){
+    const rect = stage.getBoundingClientRect();
+    for(let i=0;i<count;i++){
+      const s = document.createElement('div');
+      s.className = 'sparkle';
+      s.textContent = sparkleGlyphs[Math.floor(Math.random()*sparkleGlyphs.length)];
+      s.style.color = neonPalette[Math.floor(Math.random()*neonPalette.length)];
+      s.style.left = (Math.random()*rect.width) + 'px';
+      s.style.top = (Math.random()*rect.height) + 'px';
+      s.style.animationDuration = (600 + Math.random()*500) + 'ms';
+      sparkleLayer.appendChild(s);
+      s.addEventListener('animationend', ()=> s.remove());
+    }
+  }
+  sparkleBtn.addEventListener('click', ()=> spawnSparkles(28));
+ 
+  /* ---------- presets ---------- */
+  function applyTheme(theme){
+    colorPicker.value = theme.color;
+    if(!discoOn && !rainbowOn){
+      copyA.style.color = theme.color;
+      copyB.style.color = theme.color;
+    }
+    beamEls.forEach((b, idx)=>{ b.style.background = theme.beams[idx % theme.beams.length]; });
+    saveState();
+  }
+  themes.forEach(theme=>{
+    const btn = document.createElement('button');
+    btn.className = 'themeBtn';
+    btn.textContent = theme.name;
+    btn.addEventListener('click', ()=> applyTheme(theme));
+    presetBtns.appendChild(btn);
+  });
+ 
+  /* ---------- fullscreen ---------- */
   fullscreenBtn.addEventListener('click', ()=>{
     if(!document.fullscreenElement){
       document.documentElement.requestFullscreen().catch(()=>{});
@@ -391,8 +686,10 @@
   });
   document.addEventListener('fullscreenchange', ()=>{
     fullscreenBtn.classList.toggle('on', !!document.fullscreenElement);
+    requestAnimationFrame(measure);
   });
-
+ 
+  /* ---------- lock / unlock ---------- */
   function lockScreen(){
     locked = true;
     dock.classList.add('hidden');
@@ -407,16 +704,52 @@
   }
   lockBtn.addEventListener('click', lockScreen);
   unlockFab.addEventListener('click', unlockScreen);
-
+ 
   // Prevent scroll/zoom gestures on the stage while allowing normal control interaction
-  document.getElementById('stage').addEventListener('touchmove', (e)=>{
+  stage.addEventListener('touchmove', (e)=>{
     e.preventDefault();
   }, {passive:false});
-
+ 
   document.addEventListener('gesturestart', (e)=> e.preventDefault());
-
-  // init
-  updateText();
+ 
+  window.addEventListener('resize', ()=> requestAnimationFrame(measure));
+ 
+  /* ---------- init ---------- */
+  function init(){
+    const saved = loadState();
+    if(saved){
+      if(typeof saved.text === 'string') textInput.value = saved.text;
+      if(saved.font){ fontSelect.value = saved.font; signText.style.fontFamily = saved.font; }
+      if(saved.color) colorPicker.value = saved.color;
+      if(saved.size){ sizeSlider.value = saved.size; sizeVal.textContent = saved.size; signText.style.fontSize = saved.size + 'px'; }
+      if(saved.speed){ speedSlider.value = saved.speed; speedVal.textContent = saved.speed; }
+      if(typeof saved.scrolling === 'boolean'){
+        scrolling = saved.scrolling;
+        scrollToggleBtn.textContent = scrolling ? '⏸ หยุดเลื่อน' : '▶ เลื่อนข้อความ';
+        scrollToggleBtn.classList.toggle('on', !scrolling);
+      }
+      if(saved.bulbsOn){
+        bulbsOn = true;
+        bulbLayer.classList.add('active');
+        bulbBtn.classList.add('on');
+      }
+      if(saved.rainbowOn){
+        rainbowOn = true;
+        rainbowBtn.classList.add('on');
+      }
+    }
+    updateText();
+    copyA.style.color = rainbowOn ? copyA.style.color : colorPicker.value;
+    copyB.style.color = rainbowOn ? copyB.style.color : colorPicker.value;
+    applyRainbow();
+ 
+    // start swept-in from the right edge, like a marquee entrance
+    position = stage.getBoundingClientRect().width;
+    signText.style.transform = 'translateX(' + position + 'px)';
+ 
+    rafId = requestAnimationFrame(frame);
+  }
+  init();
 })();
 </script>
 </body>
