@@ -491,7 +491,8 @@
         speed: speedSlider.value,
         scrolling: scrolling,
         bulbsOn: bulbsOn,
-        rainbowOn: rainbowOn
+        rainbowOn: rainbowOn,
+        sparkleOn: sparkleOn
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }catch(e){}
@@ -643,7 +644,9 @@
     saveState();
   });
  
-  /* ---------- sparkle burst ---------- */
+  /* ---------- sparkle burst (loop) ---------- */
+  let sparkleOn = false;
+  let sparkleTimer = null;
   function spawnSparkles(count){
     const rect = stage.getBoundingClientRect();
     for(let i=0;i<count;i++){
@@ -658,7 +661,21 @@
       s.addEventListener('animationend', ()=> s.remove());
     }
   }
-  sparkleBtn.addEventListener('click', ()=> spawnSparkles(28));
+  function startSparkleLoop(){
+    spawnSparkles(28);
+    sparkleTimer = setInterval(()=> spawnSparkles(8), 260);
+  }
+  function stopSparkleLoop(){
+    clearInterval(sparkleTimer);
+    sparkleTimer = null;
+  }
+  sparkleBtn.addEventListener('click', ()=>{
+    sparkleOn = !sparkleOn;
+    sparkleBtn.classList.toggle('on', sparkleOn);
+    sparkleBtn.textContent = sparkleOn ? '🎆 หยุดประกาย' : '🎆 พ่นประกาย';
+    if(sparkleOn) startSparkleLoop(); else stopSparkleLoop();
+    saveState();
+  });
  
   /* ---------- presets ---------- */
   function applyTheme(theme){
@@ -738,6 +755,12 @@
       if(saved.rainbowOn){
         rainbowOn = true;
         rainbowBtn.classList.add('on');
+      }
+      if(saved.sparkleOn){
+        sparkleOn = true;
+        sparkleBtn.classList.add('on');
+        sparkleBtn.textContent = '🎆 หยุดประกาย';
+        startSparkleLoop();
       }
     }
     updateText();
